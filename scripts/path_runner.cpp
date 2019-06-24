@@ -25,8 +25,19 @@ vector<geometry_msgs::PoseStamped> getPoseFile(string FileName)
 }
 
 
-
-// TODO Open and store file
+tf::StampedTransform getPose(string FileName, tf::TransformListener listener)
+{
+    tf::StampedTransform transform;
+    try{ 
+      listener.waitForTransform("odom","base_link",ros::Time(0),ros::Duration(3));
+      listener.lookupTransform("odom", "base_link",
+                               ros::Time(0), transform);  
+    }
+        catch (tf::TransformException &ex) {
+            ROS_ERROR("%s",ex.what());  
+    }
+    return transform;
+}
 
 
 int main()
