@@ -25,7 +25,7 @@ vector<geometry_msgs::PoseStamped> getPoseFile(string FileName)
 }
 
 
-tf::StampedTransform getPose(string FileName, tf::TransformListener listener)
+tf::StampedTransform getPose(tf::TransformListener listener)
 {
     tf::StampedTransform transform;
     try{ 
@@ -38,6 +38,27 @@ tf::StampedTransform getPose(string FileName, tf::TransformListener listener)
     }
     return transform;
 }
+
+geometry_msgs::Twist calculateTwist(tf::TransformListener listener, tf::StampedTransform ref_trans)
+{
+    tf::StampedTransform main_frame_trans = getPose(listener);
+    tf::StampedTransform trans_diff = ref_trans.inverseTimes(main_frame_trans);
+
+    return twist;
+}
+
+
+Angles convertQuternionToRollPitchYaw(const tf::StampedTransform &trans)
+{
+    Angles rollpitchyaw;
+
+    tf::Quaternion q(trans.getRotation());
+    tf::Matrix3x3 m(q);
+    m.getRPY(rollpitchyaw.roll,rollpitchyaw.pitch,rollpitchyaw.yaw);
+    
+    return rollpitchyaw;
+}
+
 
 
 int main()
