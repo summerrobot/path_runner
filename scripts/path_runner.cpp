@@ -14,27 +14,104 @@
 #include <stdlib.h>
 #include <tf/transform_datatypes.h>
 
+
 using namespace std;
 
+string INPUTFILENAME{"PostionLogger"};
 
-vector<geometry_msgs::PoseStamped> getPoseFile(string FileName)
+
+struct Angles {
+    double roll;
+    double pitch;
+    double yaw;
+};
+
+
+string getFilePath()
 {
-    
+    const char* home = getenv("USER");
 
+    if (!home)
+    {
+        std::cerr << "USER is not defined." << std::endl;
+    }
+
+    std::string USER_STRING = home;
+
+    string filePath{"/home/" + USER_STRING +  "/Desktop/" + INPUTFILENAME + ".yaml"};
+
+    return filePath;
 
 }
 
 
-
-// TODO Open and store file
-
-
-int main()
+vector<tf::StampedTransform> getPoseFileAndSetPosesIntoVector(string filePath)
 {
 
+    string line;
+    vector<tf::StampedTransform> poses;
     
 
+    ifstream inputfile{filePath};
 
+    if(!inputfile)
+    {
+        std::cerr << "Error: cannot open file"<<std::endl;
+    }
 
-    return 0;
+    // Read from file
+
+    while(inputfile)
+    {
+        double x, y , z , yaw;
+        Angles rollpitchyaw;
+
+        tf::Vector3 position; 
+        tf::StampedTransform pose;
+        
+
+        getline(inputfile,line);
+        cout << line << endl;
+
+        stringstream XYZYAW(line);
+
+        XYZYAW>> x >> y >> z >> yaw;
+
+        // Set position
+        position.setX(x);
+        position.setY(y);
+        position.setZ(z);
+        rollpitchyaw.yaw = yaw;
+
+        pose.setOrigin(position);
+
+        // set rotation
+        tf::Quaternion orientation{convertRollPitchYawToQuartention(rollpitchyaw)};
+        pose.setRotation(orientation);
+
+        // Put into poses
+        poses.push_back(pose);
+
+    }
+
+    return poses;
+
 }
+
+tf::Quaternion convertRollPitchYawToQuartention(const Angles &rollPitchYaw)
+{
+    tf::Quaternion posequartion;
+    posequartion.setRPY(rollPitchYaw.roll, rollPitchYaw.pitch, rollPitchYaw.yaw);
+    posequartion.normalize();
+    return posequartion;
+} 
+
+
+
+
+
+
+
+
+
+

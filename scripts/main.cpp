@@ -8,5 +8,7 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(10);
     
     // TODO make a publisher
+
+    
     return 0;
 }
